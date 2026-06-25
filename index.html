@@ -128,6 +128,9 @@
             left: 50%;
             transform-origin: center;
             animation: rotate var(--orbit-dur) linear infinite;
+            /* Orbit divs must not block clicks on planets from other orbits.
+               The planet-ball child below re-enables pointer events. */
+            pointer-events: none;
         }
 
         @keyframes rotate {
@@ -149,6 +152,15 @@
             left: 50%;
             transform: translateX(-50%);
             box-shadow: 0 0 20px var(--planet-glow, rgba(255, 255, 255, 0.3));
+            /* Re-enable clicks for the planet itself (overrides parent's pointer-events: none) */
+            pointer-events: auto;
+        }
+
+        /* The <i> icon inside .planet-ball sits on top of the ball in the
+           stacking order; without pointer-events: none it captures clicks
+           before they reach the planet-ball's click handler. */
+        .planet-ball > i {
+            pointer-events: none;
         }
 
         .planet-ball:hover {
@@ -190,6 +202,10 @@
             background: radial-gradient(circle at 30% 30%, #FFF5B5, #FFB627 40%, #FF5E5B 90%);
             cursor: pointer;
             animation: sunPulse 4s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
 
         @keyframes sunPulse {
@@ -667,6 +683,15 @@
             transform: scale(1.2);
         }
 
+        /* Inner orbits (closer to sun) get higher z-index so planets
+           in larger orbits cannot visually stack on top of them
+           when their orbital positions align along the same axis. */
+        .step-node[data-step="1"] { z-index: 15; }
+        .step-node[data-step="2"] { z-index: 14; }
+        .step-node[data-step="3"] { z-index: 13; }
+        .step-node[data-step="4"] { z-index: 12; }
+        .step-node[data-step="5"] { z-index: 11; }
+
         /* Design Thinking 5-Step Flow */
         .dt-flow {
             display: grid;
@@ -1133,51 +1158,52 @@
                 </div>
 
                 <!-- Design Thinking 5-step orbit (visual) -->
-                <div class="reveal relative h-[480px] md:h-[560px] flex items-center justify-center">
-                    <div class="solar-system" style="width: 500px; height: 500px;">
-                        <div class="sun-rays"></div>
-                        <div class="sun" style="width: 90px; height: 90px;">
-                            <div class="display font-bold text-sm leading-tight" style="color: var(--bg);">
-                                DESIGN<br>THINKING</div>
-                        </div>
-                        <div class="orbit-ring" style="width: 130px; height: 130px;"></div>
-                        <div class="orbit-ring" style="width: 200px; height: 200px;"></div>
-                        <div class="orbit-ring" style="width: 270px; height: 270px;"></div>
-                        <div class="orbit-ring" style="width: 340px; height: 340px;"></div>
-                        <div class="orbit-ring" style="width: 410px; height: 410px;"></div>
-                        <div class="planet-orbit" style="--orbit-dur: 12s; width: 130px; height: 130px;">
-                            <div class="planet-ball step-node" data-step="1" data-name="Empathize"
-                                style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #FF9AA2, #FF5E5B); --planet-glow: rgba(255,94,91,0.6);">
-                                <i class="fas fa-heart text-base"></i>
+                <div class="reveal flex flex-col items-center justify-center gap-12">
+                    <div class="relative h-[480px] md:h-[560px] flex items-center justify-center">
+                        <div class="solar-system" style="width: 500px; height: 500px;">
+                            <div class="sun-rays"></div>
+                            <div class="sun" style="width: 90px; height: 90px;">
+                                <div class="display font-bold text-sm leading-tight" style="color: var(--bg);">
+                                    DESIGN<br>THINKING</div>
                             </div>
-                        </div>
-                        <div class="planet-orbit" style="--orbit-dur: 16s; width: 200px; height: 200px;">
-                            <div class="planet-ball step-node" data-step="2" data-name="Define"
-                                style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #FFD480, #FFB627); --planet-glow: rgba(255,182,39,0.6);">
-                                <i class="fas fa-bullseye text-base"></i>
+                            <div class="orbit-ring" style="width: 170px; height: 170px;"></div>
+                            <div class="orbit-ring" style="width: 230px; height: 230px;"></div>
+                            <div class="orbit-ring" style="width: 290px; height: 290px;"></div>
+                            <div class="orbit-ring" style="width: 350px; height: 350px;"></div>
+                            <div class="orbit-ring" style="width: 410px; height: 410px;"></div>
+                            <div class="planet-orbit" style="--orbit-dur: 12s; width: 170px; height: 170px;">
+                                <div class="planet-ball step-node" data-step="1" data-name="Empathize"
+                                    style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #FF9AA2, #FF5E5B); --planet-glow: rgba(255,94,91,0.6);">
+                                    <i class="fas fa-heart text-base"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="planet-orbit" style="--orbit-dur: 20s; width: 270px; height: 270px;">
-                            <div class="planet-ball step-node" data-step="3" data-name="Ideate"
-                                style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #FFF5B5, #FF5E5B); --planet-glow: rgba(255,94,91,0.6);">
-                                <i class="fas fa-lightbulb text-base"></i>
+                            <div class="planet-orbit" style="--orbit-dur: 16s; width: 230px; height: 230px;">
+                                <div class="planet-ball step-node" data-step="2" data-name="Define"
+                                    style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #FFD480, #FFB627); --planet-glow: rgba(255,182,39,0.6);">
+                                    <i class="fas fa-bullseye text-base"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="planet-orbit" style="--orbit-dur: 26s; width: 340px; height: 340px;">
-                            <div class="planet-ball step-node" data-step="4" data-name="Prototype"
-                                style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #B5E8E3, #00CECB); --planet-glow: rgba(0,206,203,0.6);">
-                                <i class="fas fa-cube text-base"></i>
+                            <div class="planet-orbit" style="--orbit-dur: 20s; width: 290px; height: 290px;">
+                                <div class="planet-ball step-node" data-step="3" data-name="Ideate"
+                                    style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #FFF5B5, #FF5E5B); --planet-glow: rgba(255,94,91,0.6);">
+                                    <i class="fas fa-lightbulb text-base"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="planet-orbit" style="--orbit-dur: 32s; width: 410px; height: 410px;">
-                            <div class="planet-ball step-node" data-step="5" data-name="Test"
-                                style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #D4B5FF, #B388FF); --planet-glow: rgba(179,136,255,0.6);">
-                                <i class="fas fa-flask text-base"></i>
+                            <div class="planet-orbit" style="--orbit-dur: 26s; width: 350px; height: 350px;">
+                                <div class="planet-ball step-node" data-step="4" data-name="Prototype"
+                                    style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #B5E8E3, #00CECB); --planet-glow: rgba(0,206,203,0.6);">
+                                    <i class="fas fa-cube text-base"></i>
+                                </div>
+                            </div>
+                            <div class="planet-orbit" style="--orbit-dur: 32s; width: 410px; height: 410px;">
+                                <div class="planet-ball step-node" data-step="5" data-name="Test"
+                                    style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #D4B5FF, #B388FF); --planet-glow: rgba(179,136,255,0.6);">
+                                    <i class="fas fa-flask text-base"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="absolute bottom-0 left-0 right-0 text-center text-xs px-4"
-                        style="color: var(--muted);">
+                    <div class="text-center text-xs px-4" style="color: var(--muted);">
                         <i class="fas fa-mouse-pointer"></i> คลิกดาวแต่ละดวงเพื่อดูขั้นตอน
                     </div>
                 </div>
