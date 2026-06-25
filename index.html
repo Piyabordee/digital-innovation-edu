@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คิดเชิงออกแบบ & นวัตกรรมดิจิทัล | สื่อการสอนแบบโต้ตอบ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0a0612;
+            --bg-2: #14111f;
+            --surface: #1c1729;
+            --surface-2: #25203a;
+            --border: rgba(255, 182, 39, 0.18);
+            --fg: #F5F1E8;
+            --muted: #9A8FB0;
+            --accent: #FFB627;
+            --accent-2: #FF5E5B;
+            --accent-3: #00CECB;
+            --accent-4: #FF006E;
+            --accent-5: #B388FF;
+        }
+
+        * {
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .display {
+            font-family: 'Bai Jamjuree', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--fg);
+            overflow-x: hidden;
+        }
+
+        /* Starfield */
+        .starfield {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(255, 0, 110, 0.12), transparent 50%),
+                radial-gradient(ellipse 60% 50% at 80% 100%, rgba(0, 206, 203, 0.10), transparent 50%),
+                radial-gradient(ellipse 50% 40% at 100% 30%, rgba(255, 182, 39, 0.08), transparent 50%),
+                var(--bg);
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--dur, 3s) infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.15;
+                transform: scale(0.8);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.3);
+            }
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 120px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, white, transparent);
+            animation: shoot 6s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes shoot {
+            0% {
+                transform: translate(0, 0) rotate(-25deg);
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            20% {
+                opacity: 0;
+                transform: translate(-500px, 250px) rotate(-25deg);
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Solar system */
+        .solar-system {
+            position: relative;
+            width: 700px;
+            height: 700px;
+            margin: 0 auto;
+        }
+
+        .orbit-ring {
+            position: absolute;
+            border: 1px dashed rgba(245, 241, 232, 0.08);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .planet-orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: center;
+            animation: rotate var(--orbit-dur) linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .planet-ball {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 20px var(--planet-glow, rgba(255, 255, 255, 0.3));
+        }
+
+        .planet-ball:hover {
+            transform: translateX(-50%) scale(1.6);
+            z-index: 20;
+            box-shadow: 0 0 40px var(--planet-glow, rgba(255, 255, 255, 0.6));
+        }
+
+        .planet-ball::after {
+            content: attr(data-name);
+            position: absolute;
+            top: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            white-space: nowrap;
+            color: var(--fg);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            background: var(--surface);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .planet-ball:hover::after {
+            opacity: 1;
+        }
+
+        .sun {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #FFF5B5, #FFB627 40%, #FF5E5B 90%);
+            cursor: pointer;
+            animation: sunPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes sunPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 60px #FFB627, 0 0 120px rgba(255, 94, 91, 0.5), 0 0 200px rgba(255, 0, 110, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 80px #FFB627, 0 0 160px rgba(255, 94, 91, 0.7), 0 0 240px rgba(255, 0, 110, 0.3);
+            }
+        }
+
+        .sun-rays {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: conic-gradient(from 0deg, transparent, rgba(255, 182, 39, 0.3), transparent, rgba(255, 94, 91, 0.3), transparent, rgba(255, 182, 39, 0.3), transparent);
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+            filter: blur(8px);
+        }
+
+        /* Saturn rings */
+        .saturn-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(75deg);
+            width: 160%;
+            height: 160%;
+            border: 3px solid rgba(255, 200, 100, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .saturn-ring::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border: 1px solid rgba(255, 200, 100, 0.3);
+            border-radius: 50%;
+        }
+
+        /* Cards */
+        .planet-card {
+            background: linear-gradient(135deg, var(--surface), var(--surface-2));
+            border: 1px solid var(--border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .planet-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), var(--card-glow, rgba(255, 182, 39, 0.2)), transparent 50%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+
+        .planet-card:hover::before {
+            opacity: 1;
+        }
+
+        .planet-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--card-accent, var(--accent));
+            box-shadow: 0 20px 40px -10px var(--card-shadow, rgba(255, 182, 39, 0.3));
+        }
+
+        .planet-mini {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+            transition: transform 0.5s;
+        }
+
+        .planet-card:hover .planet-mini {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 6, 18, 0.88);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, var(--surface), var(--bg-2));
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            max-width: 720px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-backdrop.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Quiz */
+        .quiz-option {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-option::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .quiz-option:hover:not(.answered)::before {
+            opacity: 0.1;
+        }
+
+        .quiz-option:hover:not(.answered) {
+            border-color: var(--accent);
+            transform: translateX(6px);
+        }
+
+        .quiz-option.correct {
+            background: rgba(0, 206, 203, 0.15);
+            border-color: var(--accent-3);
+        }
+
+        .quiz-option.correct::before {
+            background: linear-gradient(90deg, transparent, rgba(0, 206, 203, 0.1));
+            opacity: 1;
+        }
+
+        .quiz-option.wrong {
+            background: rgba(255, 94, 91, 0.15);
+            border-color: var(--accent-2);
+        }
+
+        .quiz-option.wrong::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 94, 91, 0.1));
+            opacity: 1;
+        }
+
+        /* Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s, transform 0.8s;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Flip card */
+        .flip-card {
+            perspective: 1200px;
+            cursor: pointer;
+            height: 220px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front,
+        .flip-card-back {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .flip-card-front {
+            background: linear-gradient(135deg, var(--surface), var(--surface-2));
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, var(--bg-2), var(--surface));
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--surface);
+            border: 1px solid var(--accent);
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            z-index: 200;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        /* Nav */
+        .nav-link {
+            position: relative;
+            transition: color 0.3s;
+            color: var(--muted);
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--fg);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 8px;
+            background: var(--surface);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-4));
+            background-size: 200% 100%;
+            animation: progressGlow 3s linear infinite;
+            transition: width 0.5s;
+        }
+
+        @keyframes progressGlow {
+            0% {
+                background-position: 0% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        /* Comparison bars */
+        .compare-bar {
+            height: 32px;
+            background: var(--surface);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .compare-bar:hover {
+            transform: translateX(6px);
+        }
+
+        .compare-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--bar-color, var(--accent)), var(--bar-color2, var(--accent-2)));
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--accent), var(--accent-2));
+            border-radius: 5px;
+        }
+
+        /* Mobile menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 320px;
+            height: 100vh;
+            background: var(--bg-2);
+            border-left: 1px solid var(--border);
+            z-index: 60;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 5rem 2rem 2rem;
+        }
+
+        .mobile-menu.open {
+            right: 0;
+        }
+
+        /* Particle burst */
+        .particle {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Section heading */
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            background: rgba(255, 182, 39, 0.08);
+            border: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        /* Size comparison circle */
+        .size-circle {
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.4s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .size-circle:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+
+        .size-circle.selected {
+            box-shadow: 0 0 0 4px var(--bg), 0 0 0 6px var(--accent), 0 0 40px var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .solar-system {
+                transform: scale(0.55);
+                transform-origin: center;
+                margin: -180px auto;
+            }
+
+            .display {
+                letter-spacing: -0.02em;
+            }
+        }
+
+        /* Chapter Badge */
+        .chapter-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1.25rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(255, 182, 39, 0.18), rgba(255, 94, 91, 0.10));
+            border: 1px solid rgba(255, 182, 39, 0.40);
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        /* Chapter Hero Button (2 large chapter buttons in hero) */
+        .chapter-hero-btn {
+            display: block;
+            border-radius: 1rem;
+            padding: 2px;
+            transition: transform 0.3s;
+            text-decoration: none;
+        }
+
+        .chapter-hero-btn:hover {
+            transform: translateY(-4px);
+        }
+
+        .chapter-hero-inner {
+            border-radius: calc(1rem - 2px);
+            border: 1px solid;
+            padding: 1.25rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .chapter-hero-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg);
+            font-size: 1.25rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Step Node (in hero Design Thinking orbit) */
+        .step-node {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg);
+            box-shadow: 0 0 30px var(--planet-glow);
+            transition: transform 0.3s;
+        }
+
+        .step-node:hover {
+            transform: scale(1.2);
+        }
+
+        /* Design Thinking 5-Step Flow */
+        .dt-flow {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.75rem;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .dt-flow {
+                grid-template-columns: repeat(1, 1fr);
+            }
+        }
+
+        .dt-step {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dt-step:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .dt-step-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--bg);
+            font-weight: 700;
+            box-shadow: 0 0 25px var(--step-glow);
+        }
+
+        .dt-step-num {
+            font-family: 'Bai Jamjuree', sans-serif;
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .dt-step-name {
+            font-family: 'Bai Jamjuree', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .dt-step-thai {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .dt-step-cta {
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Tech Card */
+        .tech-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.06), transparent 60%);
+            pointer-events: none;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px var(--card-glow);
+            border-color: var(--card-accent);
+        }
+
+        .tech-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin: 0 auto 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: var(--bg);
+            box-shadow: 0 8px 20px var(--card-glow);
+            background: var(--card-bg);
+        }
+
+        /* Innov Card */
+        .innov-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1rem 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .innov-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            border-color: var(--card-accent);
+        }
+
+        .innov-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Comm Card */
+        .comm-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .comm-card:hover {
+            transform: scale(1.05);
+            background: var(--surface-2);
+        }
+
+        /* STP Flow */
+        .stp-flow {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            align-items: stretch;
+        }
+
+        @media (max-width: 768px) {
+            .stp-flow {
+                grid-template-columns: repeat(1, 1fr);
+            }
+        }
+
+        .stp-step {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .stp-step:hover {
+            transform: translateY(-4px);
+            border-color: var(--stp-accent);
+            box-shadow: 0 12px 30px var(--stp-glow);
+        }
+
+        .stp-letter {
+            font-family: 'Bai Jamjuree', sans-serif;
+            font-weight: 800;
+            font-size: 4rem;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--stp-accent), var(--stp-accent-2, var(--accent-5)));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stp-arrow {
+            position: absolute;
+            top: 50%;
+            right: -0.65rem;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--surface-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            border: 2px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .stp-arrow {
+                display: none;
+            }
+        }
+
+        /* Segment / Empathize Card */
+        .click-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .click-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--card-accent);
+            box-shadow: 0 8px 25px var(--card-glow);
+        }
+
+        /* Empathy Map 6-Cell */
+        .empathy-cell {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .empathy-cell:hover {
+            transform: scale(1.05);
+            border-color: var(--cell-accent);
+            box-shadow: 0 10px 30px var(--cell-glow);
+        }
+
+        .empathy-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--bg);
+            background: var(--cell-bg);
+        }
+
+        /* Pain vs Gain Cards */
+        .pain-card {
+            background: linear-gradient(135deg, rgba(255, 94, 91, 0.10), rgba(255, 94, 91, 0.03));
+            border: 1px solid rgba(255, 94, 91, 0.30);
+        }
+
+        .pain-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            background: var(--bg-2);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .pain-item:hover {
+            background: rgba(255, 94, 91, 0.10);
+            border-color: rgba(255, 94, 91, 0.35);
+            transform: translateX(4px);
+        }
+
+        .pain-item i {
+            color: var(--accent-2);
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+
+        .gain-card {
+            background: linear-gradient(135deg, rgba(0, 206, 203, 0.10), rgba(0, 206, 203, 0.03));
+            border: 1px solid rgba(0, 206, 203, 0.30);
+        }
+
+        .gain-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            background: var(--bg-2);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .gain-item:hover {
+            background: rgba(0, 206, 203, 0.10);
+            border-color: rgba(0, 206, 203, 0.35);
+            transform: translateX(-4px);
+        }
+
+        .gain-item i {
+            color: var(--accent-3);
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Starfield -->
+    <div class="starfield" id="starfield">
+        <div class="shooting-star" style="top: 15%; right: 10%; animation-delay: 0s;"></div>
+        <div class="shooting-star" style="top: 60%; right: 30%; animation-delay: 3s;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <header class="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg"
+        style="background: rgba(10, 6, 18, 0.75); border-bottom: 1px solid var(--border);">
+        <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="#hero" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full relative"
+                    style="background: radial-gradient(circle at 30% 30%, #FFF5B5, #FFB627, #FF5E5B); box-shadow: 0 0 20px #FFB627;">
+                    <div class="absolute inset-0 rounded-full"
+                        style="background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.3), transparent); animation: rotate 4s linear infinite;">
+                    </div>
+                </div>
+                <span class="display text-xl font-bold tracking-tight">Design<span
+                        style="color: var(--accent);">Think</span></span>
+            </a>
+            <ul class="hidden md:flex items-center gap-7 text-sm font-medium">
+                <li><a href="#hero" class="nav-link active">หน้าแรก</a></li>
+                <li><a href="#ch1" class="nav-link">บทที่ 1</a></li>
+                <li><a href="#ch1-tech" class="nav-link">เทคโนโลยี</a></li>
+                <li><a href="#ch1-innov" class="nav-link">นวัตกรรม</a></li>
+                <li><a href="#ch2" class="nav-link">บทที่ 2</a></li>
+                <li><a href="#ch2-stp" class="nav-link">STP</a></li>
+                <li><a href="#ch2-empathize" class="nav-link">Empathize</a></li>
+                <li><a href="#ch2-map" class="nav-link">Empathy Map</a></li>
+            </ul>
+            <button class="md:hidden text-2xl" id="mobileMenuBtn" aria-label="เมนู"><i class="fas fa-bars"></i></button>
+        </nav>
+    </header>
+
+    <!-- Mobile menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <button class="absolute top-5 right-5 text-2xl" id="closeMobileMenu" aria-label="ปิด"><i
+                class="fas fa-times"></i></button>
+        <ul class="space-y-5 text-lg">
+            <li><a href="#hero" class="nav-link mobile-link">หน้าแรก</a></li>
+            <li><a href="#ch1" class="nav-link mobile-link">บทที่ 1 · Design Thinking</a></li>
+            <li><a href="#ch1-tech" class="nav-link mobile-link">เทคโนโลยีดิจิทัล</a></li>
+            <li><a href="#ch1-innov" class="nav-link mobile-link">นวัตกรรมในชีวิตประจำวัน</a></li>
+            <li><a href="#ch2" class="nav-link mobile-link">บทที่ 2 · เข้าใจลูกค้า</a></li>
+            <li><a href="#ch2-stp" class="nav-link mobile-link">STP Marketing</a></li>
+            <li><a href="#ch2-empathize" class="nav-link mobile-link">Empathize 3 วิธี</a></li>
+            <li><a href="#ch2-map" class="nav-link mobile-link">Empathy Map 6 ด้าน</a></li>
+        </ul>
+    </div>
+
+    <main class="relative z-10">
+
+        <!-- Hero -->
+        <section id="hero" class="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-12">
+            <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center w-full">
+                <div class="reveal">
+                    <div class="section-tag mb-6">
+                        <span class="w-2 h-2 rounded-full"
+                            style="background: var(--accent); animation: twinkle 1.5s infinite;"></span>
+                        สื่อการสอนแบบโต้ตอบ · คลิกเพื่อสำรวจ
+                    </div>
+                    <h1 class="display text-4xl md:text-6xl font-extrabold leading-[1.1] mb-6">
+                        หลักการคิดเชิงออกแบบ<br>
+                        <span
+                            style="background: linear-gradient(135deg, #FFB627, #FF5E5B, #FF006E); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">นวัตกรรมธุรกิจดิจิทัล</span>
+                    </h1>
+                    <p class="text-lg md:text-xl mb-8 max-w-xl" style="color: var(--muted);">
+                        เรียนรู้ Design Thinking 5 ขั้น · เทคโนโลยีดิจิทัล · เทคนิคเข้าใจลูกค้า —
+                        คลิกทุกหัวข้อเพื่อเปิดเนื้อหาเชิงลึกแบบโต้ตอบ
+                    </p>
+
+                    <!-- ปุ่ม 2 บทใหญ่ -->
+                    <div class="grid sm:grid-cols-2 gap-4 mb-8">
+                        <a href="#ch1" class="chapter-hero-btn group">
+                            <div class="chapter-hero-inner"
+                                style="background: linear-gradient(135deg, rgba(255,182,39,0.15), rgba(255,94,91,0.10)); border-color: rgba(255,182,39,0.40);">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="chapter-hero-icon"
+                                        style="background: linear-gradient(135deg, #FFB627, #FF5E5B);">
+                                        <span class="font-extrabold">1</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs uppercase tracking-wider"
+                                            style="color: var(--accent);">Chapter 1</div>
+                                        <div class="display font-bold text-lg">คิดเชิงออกแบบ</div>
+                                    </div>
+                                </div>
+                                <p class="text-sm" style="color: var(--muted);">Design Thinking 5 ขั้น ·
+                                    เทคโนโลยี 5 ด้าน · นวัตกรรมในชีวิตประจำวัน</p>
+                                <div class="mt-3 text-xs flex items-center gap-2"
+                                    style="color: var(--accent);">
+                                    <i class="fas fa-hand-pointer"></i> คลิกเข้าสู่บท
+                                    <i class="fas fa-arrow-right group-hover:translate-x-1 transition"></i>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#ch2" class="chapter-hero-btn group">
+                            <div class="chapter-hero-inner"
+                                style="background: linear-gradient(135deg, rgba(0,206,203,0.15), rgba(179,136,255,0.10)); border-color: rgba(0,206,203,0.40);">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="chapter-hero-icon"
+                                        style="background: linear-gradient(135deg, #00CECB, #B388FF);">
+                                        <span class="font-extrabold">2</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs uppercase tracking-wider"
+                                            style="color: var(--accent-3);">Chapter 2</div>
+                                        <div class="display font-bold text-lg">เข้าใจลูกค้า</div>
+                                    </div>
+                                </div>
+                                <p class="text-sm" style="color: var(--muted);">STP Marketing · Empathize
+                                    3 วิธี · Empathy Map 6 ด้าน · Pain vs Gain</p>
+                                <div class="mt-3 text-xs flex items-center gap-2"
+                                    style="color: var(--accent-3);">
+                                    <i class="fas fa-hand-pointer"></i> คลิกเข้าสู่บท
+                                    <i class="fas fa-arrow-right group-hover:translate-x-1 transition"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 max-w-md">
+                        <div>
+                            <div class="display text-3xl font-bold" style="color: var(--accent);" data-count="5">0</div>
+                            <div class="text-xs mt-1" style="color: var(--muted);">ขั้น Design Thinking</div>
+                        </div>
+                        <div>
+                            <div class="display text-3xl font-bold" style="color: var(--accent-3);" data-count="6">0
+                            </div>
+                            <div class="text-xs mt-1" style="color: var(--muted);">ด้าน Empathy Map</div>
+                        </div>
+                        <div>
+                            <div class="display text-3xl font-bold" style="color: var(--accent-4);">3</div>
+                            <div class="text-xs mt-1" style="color: var(--muted);">วิธี Empathize</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Design Thinking 5-step orbit (visual) -->
+                <div class="reveal relative h-[480px] md:h-[560px] flex items-center justify-center">
+                    <div class="solar-system" style="width: 500px; height: 500px;">
+                        <div class="sun-rays"></div>
+                        <div class="sun" style="width: 90px; height: 90px;">
+                            <div class="display font-bold text-sm leading-tight" style="color: var(--bg);">
+                                DESIGN<br>THINKING</div>
+                        </div>
+                        <div class="orbit-ring" style="width: 130px; height: 130px;"></div>
+                        <div class="orbit-ring" style="width: 200px; height: 200px;"></div>
+                        <div class="orbit-ring" style="width: 270px; height: 270px;"></div>
+                        <div class="orbit-ring" style="width: 340px; height: 340px;"></div>
+                        <div class="orbit-ring" style="width: 410px; height: 410px;"></div>
+                        <div class="planet-orbit" style="--orbit-dur: 12s; width: 130px; height: 130px;">
+                            <div class="planet-ball step-node" data-step="1" data-name="Empathize"
+                                style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #FF9AA2, #FF5E5B); --planet-glow: rgba(255,94,91,0.6);">
+                                <i class="fas fa-heart text-base"></i>
+                            </div>
+                        </div>
+                        <div class="planet-orbit" style="--orbit-dur: 16s; width: 200px; height: 200px;">
+                            <div class="planet-ball step-node" data-step="2" data-name="Define"
+                                style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #FFD480, #FFB627); --planet-glow: rgba(255,182,39,0.6);">
+                                <i class="fas fa-bullseye text-base"></i>
+                            </div>
+                        </div>
+                        <div class="planet-orbit" style="--orbit-dur: 20s; width: 270px; height: 270px;">
+                            <div class="planet-ball step-node" data-step="3" data-name="Ideate"
+                                style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #FFF5B5, #FF5E5B); --planet-glow: rgba(255,94,91,0.6);">
+                                <i class="fas fa-lightbulb text-base"></i>
+                            </div>
+                        </div>
+                        <div class="planet-orbit" style="--orbit-dur: 26s; width: 340px; height: 340px;">
+                            <div class="planet-ball step-node" data-step="4" data-name="Prototype"
+                                style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #B5E8E3, #00CECB); --planet-glow: rgba(0,206,203,0.6);">
+                                <i class="fas fa-cube text-base"></i>
+                            </div>
+                        </div>
+                        <div class="planet-orbit" style="--orbit-dur: 32s; width: 410px; height: 410px;">
+                            <div class="planet-ball step-node" data-step="5" data-name="Test"
+                                style="width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #D4B5FF, #B388FF); --planet-glow: rgba(179,136,255,0.6);">
+                                <i class="fas fa-flask text-base"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 text-center text-xs px-4"
+                        style="color: var(--muted);">
+                        <i class="fas fa-mouse-pointer"></i> คลิกดาวแต่ละดวงเพื่อดูขั้นตอน
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce"
+                style="color: var(--muted);">
+                <span class="text-xs">เลื่อนลง</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </section>
+
+        <!-- ===== CHAPTER 1 ===== -->
+        <section id="ch1" class="relative py-24 px-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16 reveal">
+                    <div class="chapter-badge mb-4" data-chapter="1">
+                        <i class="fas fa-compass mr-2"></i>บทที่ 1 · CHAPTER 1
+                    </div>
+                    <h2 class="display text-4xl md:text-6xl font-bold mb-4">
+                        การคิดเชิงออกแบบ<span style="color: var(--accent);">นวัตกรรมธุรกิจดิจิทัล</span>
+                    </h2>
+                    <p class="max-w-3xl mx-auto text-lg" style="color: var(--muted);">
+                        Design Thinking คือกระบวนการคิดที่เน้น <strong style="color: var(--fg);">ผู้ใช้เป็นศูนย์กลาง</strong>
+                        ผสานกับเทคโนโลยีดิจิทัล เพื่อสร้างนวัตกรรมที่ตอบโจทย์คนจริง ๆ
+                    </p>
+                </div>
+
+                <!-- Design Thinking 5 Steps -->
+                <div class="mb-20 reveal" id="ch1-dt">
+                    <div class="text-center mb-10">
+                        <div class="section-tag mb-3"><i class="fas fa-route"></i>Design Thinking 5 Steps</div>
+                        <h3 class="display text-3xl md:text-4xl font-bold mb-2">คลิกทุก <span
+                                style="color: var(--accent);">ขั้นตอน</span> เพื่อดูรายละเอียด</h3>
+                        <p class="text-sm" style="color: var(--muted);">กระบวนการคิดเชิงออกแบบ 5 ขั้นตามแนวทาง Stanford d.school</p>
+                    </div>
+                    <div class="dt-flow" id="dtFlow">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- 5 Digital Technologies -->
+                <div class="mb-20 reveal" id="ch1-tech">
+                    <div class="text-center mb-10">
+                        <div class="section-tag mb-3"><i class="fas fa-microchip"></i>เทคโนโลยีดิจิทัล 5 ด้าน</div>
+                        <h3 class="display text-3xl md:text-4xl font-bold mb-2">เทคโนโลยีที่ <span
+                                style="color: var(--accent-3);">ขับเคลื่อนนวัตกรรม</span></h3>
+                        <p class="text-sm" style="color: var(--muted);">คลิกการ์ดแต่ละใบเพื่อเปิดข้อมูลเชิงลึก + ตัวอย่างการใช้งานจริง</p>
+                    </div>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4" id="techGrid">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Daily Innovations -->
+                <div class="mb-12 reveal" id="ch1-innov">
+                    <div class="text-center mb-10">
+                        <div class="section-tag mb-3"><i class="fas fa-rocket"></i>นวัตกรรมในชีวิตประจำวัน</div>
+                        <h3 class="display text-3xl md:text-4xl font-bold mb-2">สิ่งที่คุณ <span
+                                style="color: var(--accent-4);">ใช้ทุกวัน</span></h3>
+                        <p class="text-sm" style="color: var(--muted);">จากอุปกรณ์สวมใส่ไปจนถึงแอปแชต — นวัตกรรมอยู่รอบตัวเรา</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="innovGrid">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Communication Apps -->
+                <div class="reveal" id="ch1-comm">
+                    <div class="text-center mb-10">
+                        <div class="section-tag mb-3"><i class="fas fa-comments"></i>แอปสื่อสาร</div>
+                        <h3 class="display text-2xl md:text-3xl font-bold mb-2">เชื่อมต่อ<span
+                                style="color: var(--accent-2);">ไร้พรมแดน</span></h3>
+                        <p class="text-sm" style="color: var(--muted);">คลิกเพื่อดูว่าแต่ละแอปมีจุดเด่นอะไร</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="commGrid">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CHAPTER 2 ===== -->
+        <section id="ch2" class="relative py-24 px-6"
+            style="background: linear-gradient(180deg, transparent, rgba(0, 206, 203, 0.05), transparent);">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16 reveal">
+                    <div class="chapter-badge mb-4" data-chapter="2"
+                        style="background: linear-gradient(135deg, rgba(0,206,203,0.18), rgba(179,136,255,0.12)); border-color: rgba(0,206,203,0.40);">
+                        <i class="fas fa-users mr-2"></i>บทที่ 2 · CHAPTER 2
+                    </div>
+                    <h2 class="display text-4xl md:text-6xl font-bold mb-4">
+                        การทำความเข้าใจ<span style="color: var(--accent-3);">กลุ่มเป้าหมายลูกค้า</span>
+                    </h2>
+                    <p class="max-w-3xl mx-auto text-lg" style="color: var(--muted);">
+                        ก่อนสร้างนวัตกรรม เราต้องเข้าใจลูกค้าก่อน — เรียนรู้ STP Marketing, Empathize และ Empathy Map
+                        ที่ใช้ตีความ Pain & Gain ของผู้บริโภค
+                    </p>
+                </div>
+
+                <!-- STP Marketing -->
+                <div class="mb-20 reveal" id="ch2-stp">
+                    <div class="text-center mb-10">
+                        <div class="section-tag mb-3"><i class="fas fa-bullseye"></i>STP Marketing</div>
+                        <h3 class="display text-3xl md:text-4xl font-bold mb-2">คลิก <span
+                                style="color: var(--accent-3);">S → T → P</span> ตามลำดับ</h3>
+                        <p class="text-sm" style="color: var(--muted);">3 ขั้นตอนการแบ่งตลาด กำหนดกลุ่มเป้าหมาย และวางตำแหน่งผลิตภัณฑ์</p>
+                    </div>
+                    <div class="stp-flow" id="stpFlow">
+                        <!-- Filled by JS -->
+                    </div>
+                    <div class="mt-10">
+                        <div class="text-center mb-5">
+                            <h4 class="display text-xl font-bold" style="color: var(--accent-3);">
+                                <i class="fas fa-layer-group mr-2"></i>4 วิธีแบ่งส่วนตลาด (Segmentation)
+                            </h4>
+                            <p class="text-xs" style="color: var(--muted);">คลิกการ์ดเพื่อดูตัวอย่างการแบ่ง</p>
+                        </div>
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" id="segmentGrid">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empathize 3 Methods -->
+                <div class="mb-20 reveal" id="ch2-empathize">
+                    <div class="text-center mb-10">
+                        <div class="section-tag mb-3"><i class="fas fa-heart"></i>Empathize 3 วิธี</div>
+                        <h3 class="display text-3xl md:text-4xl font-bold mb-2">เข้าใจลูกค้า<span
+                                style="color: var(--accent-4);">ตั้งแต่ต้นทาง</span></h3>
+                        <p class="text-sm" style="color: var(--muted);">3 วิธีหลักในการเข้าถึงความคิด ความรู้สึก และพฤติกรรมของลูกค้า</p>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-5" id="empathizeGrid">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Empathy Map -->
+                <div class="mb-20 reveal" id="ch2-map">
+                    <div class="text-center mb-10">
+                        <div class="section-tag mb-3"><i class="fas fa-head-side-virus"></i>Empathy Map 6 ด้าน</div>
+                        <h3 class="display text-3xl md:text-4xl font-bold mb-2">คลิก <span
+                                style="color: var(--accent-5);">6 ด้าน</span> รอบตัวลูกค้า</h3>
+                        <p class="text-sm" style="color: var(--muted);">เครื่องมือที่ใช้ตีความสิ่งที่ลูกค้า <em>คิด รู้สึก ได้ยิน มองเห็น พูด ทำ</em></p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="empathyMapGrid">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Pain vs Gain -->
+                <div class="reveal" id="ch2-paingain">
+                    <div class="text-center mb-10">
+                        <div class="section-tag mb-3"><i class="fas fa-balance-scale"></i>Pain vs Gain</div>
+                        <h3 class="display text-3xl md:text-4xl font-bold mb-2">Pain Point <span
+                                style="color: var(--accent-2);">vs</span> Gain Point</h3>
+                        <p class="text-sm" style="color: var(--muted);">คลิกแต่ละข้อเพื่อเปรียบเทียบ ปัญหา vs ความต้องการ</p>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div class="pain-card rounded-2xl p-6 reveal" id="painCard">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                                    style="background: rgba(255,94,91,0.20); color: var(--accent-2);">
+                                    <i class="fas fa-frown text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="display font-bold text-xl">Pain Point</div>
+                                    <div class="text-xs" style="color: var(--muted);">ปัญหา · ความไม่พอใจ · อุปสรรค</div>
+                                </div>
+                            </div>
+                            <ul class="space-y-3">
+                                <li class="pain-item" data-pain="อยากเดินทางไปทำงาน แต่รถติดทุกเช้า">
+                                    <i class="fas fa-times-circle"></i>อยากเดินทางไปทำงาน แต่รถติดทุกเช้า
+                                </li>
+                                <li class="pain-item" data-pain="ซื้อของออนไลน์แล้วรอสินค้านานหลายวัน">
+                                    <i class="fas fa-times-circle"></i>ซื้อของออนไลน์แล้วรอสินค้านานหลายวัน
+                                </li>
+                                <li class="pain-item" data-pain="อยากออกกำลังกาย แต่ไม่มีเวลาไปฟิตเนส">
+                                    <i class="fas fa-times-circle"></i>อยากออกกำลังกาย แต่ไม่มีเวลาไปฟิตเนส
+                                </li>
+                                <li class="pain-item" data-pain="เรียนออนไลน์แล้วไม่เข้าใจ ไม่มีคนถาม">
+                                    <i class="fas fa-times-circle"></i>เรียนออนไลน์แล้วไม่เข้าใจ ไม่มีคนถาม
+                                </li>
+                                <li class="pain-item" data-pain="ลืมกินยา ลืมนัดหมอ เพราะไม่มีใครเตือน">
+                                    <i class="fas fa-times-circle"></i>ลืมกินยา ลืมนัดหมอ เพราะไม่มีใครเตือน
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="gain-card rounded-2xl p-6 reveal" id="gainCard">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                                    style="background: rgba(0,206,203,0.20); color: var(--accent-3);">
+                                    <i class="fas fa-smile text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="display font-bold text-xl">Gain Point</div>
+                                    <div class="text-xs" style="color: var(--muted);">ความต้องการ · ความพึงพอใจ · คุณค่า</div>
+                                </div>
+                            </div>
+                            <ul class="space-y-3">
+                                <li class="gain-item" data-gain="อยากเดินทางรวดเร็ว ประหยัดเวลา ถึงที่หมายตรงเวลา">
+                                    <i class="fas fa-check-circle"></i>อยากเดินทางรวดเร็ว ประหยัดเวลา ถึงที่หมายตรงเวลา
+                                </li>
+                                <li class="gain-item" data-gain="อยากได้ของถึงมือภายในวันเดียว หรือไม่กี่ชั่วโมง">
+                                    <i class="fas fa-check-circle"></i>อยากได้ของถึงมือภายในวันเดียว หรือไม่กี่ชั่วโมง
+                                </li>
+                                <li class="gain-item" data-gain="อยากออกกำลังกายสะดวก ที่บ้านหรือที่ไหนก็ได้">
+                                    <i class="fas fa-check-circle"></i>อยากออกกำลังกายสะดวก ที่บ้านหรือที่ไหนก็ได้
+                                </li>
+                                <li class="gain-item" data-gain="อยากเรียนรู้แบบโต้ตอบได้ ถามได้ทันที">
+                                    <i class="fas fa-check-circle"></i>อยากเรียนรู้แบบโต้ตอบได้ ถามได้ทันที
+                                </li>
+                                <li class="gain-item" data-gain="อยากมีระบบเตือนความจำ ดูแลสุขภาพครบวงจร">
+                                    <i class="fas fa-check-circle"></i>อยากมีระบบเตือนความจำ ดูแลสุขภาพครบวงจร
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="relative py-12 px-6 border-t" style="border-color: var(--border);">
+            <div class="max-w-7xl mx-auto text-center">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <div class="w-8 h-8 rounded-full"
+                        style="background: radial-gradient(circle at 30% 30%, #FFF5B5, #FFB627);"></div>
+                    <span class="display text-lg font-bold">Design<span style="color: var(--accent);">Thinking</span> · สื่อการสอน</span>
+                </div>
+                <p class="text-sm mb-6" style="color: var(--muted);">สื่อการสอนแบบโต้ตอบ · หลักการคิดเชิงออกแบบและนวัตกรรมธุรกิจดิจิทัล
+                    · ออกแบบให้ครูและนักเรียนใช้งานได้ฟรี</p>
+                <div class="flex flex-wrap justify-center gap-6 text-sm" style="color: var(--muted);">
+                    <a href="#hero" class="hover:text-white transition">กลับสู่ด้านบน</a>
+                    <a href="#ch1" class="hover:text-white transition">บทที่ 1</a>
+                    <a href="#ch2" class="hover:text-white transition">บทที่ 2</a>
+                    <a href="#ch2-map" class="hover:text-white transition">Empathy Map</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Modal -->
+    <div class="modal-backdrop" id="modalBackdrop">
+        <div class="modal p-6 md:p-10" id="modalContent">
+            <button
+                class="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition hover:scale-110"
+                id="closeModal" style="background: var(--surface-2); color: var(--fg);">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-check-circle text-xl" style="color: var(--accent-3);"></i>
+            <span id="toastText">เยี่ยม!</span>
+        </div>
+    </div>
+
+    <script>
+        // ============ DATA ============
+
+        // ----- Design Thinking 5 Steps -----
+        const designThinkingData = [
+            {
+                id: 'empathize', step: 1, name: 'Empathize', thai: 'การเข้าใจ',
+                icon: 'heart', color: '#FF5E5B', color2: '#FF9AA2', glow: 'rgba(255,94,91,0.5)',
+                tagline: 'ทำความเข้าใจผู้ใช้',
+                description: 'เข้าใจความรู้สึก ความคิด และความต้องการที่แท้จริงของผู้ใช้ผ่านการสังเกต สัมภาษณ์ และรับฟังอย่างลึกซึ้ง',
+                activities: [
+                    'สัมภาษณ์ผู้ใช้ตัวจริง (User Interview)',
+                    'สังเกตพฤติกรรมในสถานการณ์จริง (Field Observation)',
+                    'ทำวิจัยตลาด / เก็บข้อมูลเชิงลึก (Research)'
+                ],
+                output: 'ข้อมูลเชิงลึกของผู้ใช้ · Empathy Map'
+            },
+            {
+                id: 'define', step: 2, name: 'Define', thai: 'การกำหนดปัญหา',
+                icon: 'bullseye', color: '#FFB627', color2: '#FFD480', glow: 'rgba(255,182,39,0.5)',
+                tagline: 'ตีกรอบปัญหาให้ชัด',
+                description: 'นำข้อมูลที่ได้มาวิเคราะห์และสังเคราะห์ เพื่อตีกรอบปัญหา (Problem Statement) ให้ชัดเจน',
+                activities: [
+                    'สรุปประเด็นปัญหาที่พบบ่อย (Pain Point)',
+                    'ระบุผู้มีส่วนได้ส่วนเสีย (Stakeholders)',
+                    'เขียนปัญหาในรูป "How Might We..."'
+                ],
+                output: 'Problem Statement · Point of View'
+            },
+            {
+                id: 'ideate', step: 3, name: 'Ideate', thai: 'การระดมความคิด',
+                icon: 'lightbulb', color: '#FFE066', color2: '#FF5E5B', glow: 'rgba(255,224,102,0.5)',
+                tagline: 'คิดให้กว้างก่อนค่อยตีวง',
+                description: 'ระดมไอเดียหลากหลายโดยไม่ปฏิเสธความคิดใด ๆ เน้นปริมาณมากกว่าคุณภาพ',
+                activities: [
+                    'Brainstorming · SCAMPER',
+                    'Mind Mapping · Storyboarding',
+                    'เทคนิค "Yes, and..." เพื่อต่อยอดไอเดีย'
+                ],
+                output: 'ชุดไอเดียหลากหลายที่พร้อมคัดเลือก'
+            },
+            {
+                id: 'prototype', step: 4, name: 'Prototype', thai: 'การสร้างต้นแบบ',
+                icon: 'cube', color: '#00CECB', color2: '#B5E8E3', glow: 'rgba(0,206,203,0.5)',
+                tagline: 'ทำต้นแบบง่าย ๆ ก่อน',
+                description: 'สร้างต้นแบบที่ใช้ทดสอบได้จริง อาจเป็นแค่กระดาษ หรือ mockup ดิจิทัล เพื่อทดลองไอเดีย',
+                activities: [
+                    'Paper Prototype · Wireframe',
+                    'Mockup ดิจิทัล (Figma / Adobe XD)',
+                    'สร้าง MVP (Minimum Viable Product)'
+                ],
+                output: 'ต้นแบบที่ทดสอบได้จริง'
+            },
+            {
+                id: 'test', step: 5, name: 'Test', thai: 'การทดสอบ',
+                icon: 'flask', color: '#B388FF', color2: '#D4B5FF', glow: 'rgba(179,136,255,0.5)',
+                tagline: 'ทดสอบ เรียนรู้ ปรับปรุง',
+                description: 'นำต้นแบบไปให้ผู้ใช้ทดลองใช้จริง เก็บ feedback และวนกลับไปปรับปรุง',
+                activities: [
+                    'Usability Testing กับผู้ใช้จริง',
+                    'A/B Testing ระหว่างตัวเลือก',
+                    'วนกลับไป Empathize ถ้าพบ Insight ใหม่'
+                ],
+                output: 'Solution ที่ตรงใจผู้ใช้'
+            }
+        ];
+
+        // ----- 5 Digital Technologies -----
+        const technologiesData = [
+            {
+                id: '5g', name: '5G', thai: 'เครือข่าย 5G',
+                icon: 'tower-cell', color: '#FFB627', color2: '#FF5E5B',
+                tagline: 'เครือข่ายไร้สายความเร็วสูง',
+                description: 'เทคโนโลยีเครือข่ายไร้สายยุคที่ 5 ที่มีความเร็วสูง ค่าหน่วงเวลาต่ำ รองรับการเชื่อมต่ออุปกรณ์จำนวนมากพร้อมกัน',
+                benefits: ['ความเร็วสูงสุด 10 Gbps', 'ค่าหน่วงเวลาต่ำกว่า 1 ms', 'รองรับ IoT นับล้านอุปกรณ์'],
+                examples: ['รถยนต์ไร้คนขับ', 'ระบบ Tele-surgery', 'Smart City']
+            },
+            {
+                id: 'cloud', name: 'Cloud', thai: 'คลาวด์คอมพิวติ้ง',
+                icon: 'cloud', color: '#6BB6FF', color2: '#4FB3AC',
+                tagline: 'พลังประมวลผลแบบออนดีมานด์',
+                description: 'บริการประมวลผลและจัดเก็บข้อมูลบนเซิร์ฟเวอร์ที่เข้าถึงได้จากทุกที่ผ่านอินเทอร์เน็ต ลงทุนต่ำ ขยายได้ทันที',
+                benefits: ['ลงทุนต่ำ (Pay-as-you-use)', 'เข้าถึงจากทุกอุปกรณ์', 'ขยายระบบได้ทันที'],
+                examples: ['Google Drive · Dropbox', 'AWS · Azure', 'SaaS เช่น Slack, Canva']
+            },
+            {
+                id: 'iot', name: 'IoT', thai: 'อินเทอร์เน็ตของสรรค์',
+                icon: 'wifi', color: '#00CECB', color2: '#B5E8E3',
+                tagline: 'ทุกสิ่งเชื่อมต่ออินเทอร์เน็ต',
+                description: 'การเชื่อมต่ออุปกรณ์ต่าง ๆ เข้ากับอินเทอร์เน็ต เพื่อเก็บข้อมูล สั่งงาน และตอบสนองอัตโนมัติ',
+                benefits: ['เก็บข้อมูล Real-time', 'สั่งงานจากระยะไกล', 'วิเคราะห์พฤติกรรมผู้ใช้'],
+                examples: ['Smart Home (Google Nest)', 'Smart Watch · Fitness Tracker', 'เซ็นเซอร์ในโรงงาน']
+            },
+            {
+                id: 'ai', name: 'AI', thai: 'ปัญญาประดิษฐ์',
+                icon: 'brain', color: '#B388FF', color2: '#D4B5FF',
+                tagline: 'คิดและเรียนรู้เหมือนมนุษย์',
+                description: 'ระบบที่เลียนแบบความสามารถของมนุษย์ เช่น เรียนรู้ วิเคราะห์ ตัดสินใจ และสร้างสรรค์',
+                benefits: ['วิเคราะห์ข้อมูลมหาศาล', 'ทำงานซ้ำ ๆ แทนมนุษย์', 'แนะนำสิ่งที่ใช่สำหรับแต่ละคน'],
+                examples: ['ChatGPT · Claude', 'ระบบแนะนำหนัง/สินค้า', 'ตรวจวินิจฉัยโรค']
+            },
+            {
+                id: 'robotics', name: 'Robotics', thai: 'หุ่นยนต์และระบบอัตโนมัติ',
+                icon: 'robot', color: '#FF006E', color2: '#FF9AA2',
+                tagline: 'เครื่องจักรทำงานแทนมนุษย์',
+                description: 'หุ่นยนต์และระบบอัตโนมัติที่ทำงานในโรงงาน คลังสินค้า หรือแม้แต่ในชีวิตประจำวัน',
+                benefits: ['ทำงาน 24 ชั่วโมงไม่หยุด', 'แม่นยำและปลอดภัย', 'ลดต้นทุนแรงงาน'],
+                examples: ['หุ่นยนต์ในโรงงาน (KUKA)', 'หุ่นยนต์ดูดฝุ่น · หุ่นยนต์เสิร์ฟอาหาร', 'แขนกลช่วยผ่าตัด']
+            }
+        ];
+
+        // ----- Daily Innovations -----
+        const innovationsData = [
+            { id: 'smartphone', name: 'Smartphone', thai: 'สมาร์ตโฟน', icon: 'fa-mobile-screen', color: '#FFB627',
+                desc: 'โทรศัพท์อัจฉริยะที่รวมทุกอย่างไว้ในมือ' },
+            { id: 'smartwatch', name: 'Smart Watch', thai: 'สมาร์ตวอทช์', icon: 'fa-clock', color: '#00CECB',
+                desc: 'นาฬิกาอัจฉริยะ แจ้งเตือน ติดตามสุขภาพ' },
+            { id: 'fitness', name: 'Fitness Tracker', thai: 'เครื่องนับก้าว', icon: 'fa-person-walking', color: '#FF5E5B',
+                desc: 'ติดตามการเคลื่อนไหว หัวใจ และการนอน' },
+            { id: 'ar', name: 'AR Glasses', thai: 'แว่น AR', icon: 'fa-glasses', color: '#B388FF',
+                desc: 'แว่นตาผสมโลกจริงกับโลกดิจิทัล' },
+            { id: 'speaker', name: 'Smart Speaker', thai: 'ลำโพงอัจฉริยะ', icon: 'fa-volume-high', color: '#FF006E',
+                desc: 'สั่งงานด้วยเสียง ตอบคำถาม เปิดเพลง' },
+            { id: 'tv', name: 'Smart TV', thai: 'สมาร์ตทีวี', icon: 'fa-tv', color: '#6BB6FF',
+                desc: 'ทีวีที่เชื่อมต่ออินเทอร์เน็ต ดู YouTube/Netflix' },
+            { id: 'camera', name: 'Action Camera', thai: 'กล้องแอ็คชัน', icon: 'fa-video', color: '#FFD480',
+                desc: 'กล้องเล็กถ่ายวิดีโอสุดเท่ เก็บทุกการเคลื่อนไหว' },
+            { id: 'drone', name: 'Drone', thai: 'โดรน', icon: 'fa-helicopter', color: '#00CECB',
+                desc: 'อากาศยานไร้คนขับ ถ่ายภาพมุมสูง ส่งของ' }
+        ];
+
+        // ----- Communication Apps -----
+        const communicationData = [
+            { id: 'line', name: 'LINE', icon: 'fa-brands fa-line', color: '#00C900',
+                desc: 'แชทอันดับ 1 ในไทย สติกเกอร์เยอะ' },
+            { id: 'whatsapp', name: 'WhatsApp', icon: 'fa-brands fa-whatsapp', color: '#25D366',
+                desc: 'แชทสากล เข้ารหัสปลอดภัย ใช้ทั่วโลก' },
+            { id: 'viber', name: 'Viber', icon: 'fa-brands fa-viber', color: '#7360F2',
+                desc: 'โทรฟรีข้ามประเทศ นิยมในยุโรป-เอเชีย' },
+            { id: 'wechat', name: 'WeChat', icon: 'fa-brands fa-weixin', color: '#1AAD19',
+                desc: 'แอปจีนครบวงจร แชท จ่ายเงิน สั่งอาหาร' },
+            { id: 'youtube', name: 'YouTube', icon: 'fa-brands fa-youtube', color: '#FF0000',
+                desc: 'แพลตฟอร์มวิดีโอใหญ่ที่สุดในโลก' },
+            { id: 'facebook', name: 'Messenger', icon: 'fa-brands fa-facebook-messenger', color: '#006AFF',
+                desc: 'แชทจาก Facebook เชื่อมโซเชียล' },
+            { id: 'telegram', name: 'Telegram', icon: 'fa-brands fa-telegram', color: '#0088CC',
+                desc: 'แชทเน้นความเป็นส่วนตัว กลุ่มใหญ่ได้' },
+            { id: 'discord', name: 'Discord', icon: 'fa-brands fa-discord', color: '#5865F2',
+                desc: 'ชุมชนออนไลน์ เกมเมอร์ ครีเอเตอร์' }
+        ];
+
+        // ----- STP Marketing 3 Stages -----
+        const stpData = [
+            {
+                id: 'segmentation', letter: 'S', name: 'Segmentation', thai: 'การแบ่งส่วนตลาด',
+                icon: 'chart-pie', accent: '#00CECB', accent2: '#6BB6FF', glow: 'rgba(0,206,203,0.4)',
+                description: 'แบ่งตลาดทั้งหมดออกเป็นกลุ่มย่อยที่มีลักษณะคล้ายกัน เพื่อให้เข้าใจลูกค้าแต่ละกลุ่ม',
+                types: [
+                    'Demographic (เพศ อายุ รายได้)',
+                    'Geographic (ภูมิภาค สภาพอากาศ)',
+                    'Psychographic (ไลฟ์สไตล์ ค่านิยม)',
+                    'Behavior (พฤติกรรมการซื้อ)'
+                ]
+            },
+            {
+                id: 'targeting', letter: 'T', name: 'Targeting', thai: 'การเลือกกลุ่มเป้าหมาย',
+                icon: 'crosshairs', accent: '#FFB627', accent2: '#FFD480', glow: 'rgba(255,182,39,0.4)',
+                description: 'เลือกกลุ่มใดกลุ่มหนึ่ง (หรือหลายกลุ่ม) ที่ธุรกิจจะเจาะตลาด โดยพิจารณาความสามารถและศักยภาพ',
+                types: [
+                    'Mass Marketing (ทุกคน)',
+                    'Differentiated (หลายกลุ่ม)',
+                    'Niche (เจาะกลุ่มเฉพาะ)',
+                    'Concentrated (เน้นกลุ่มเดียว)'
+                ]
+            },
+            {
+                id: 'positioning', letter: 'P', name: 'Positioning', thai: 'การวางตำแหน่งผลิตภัณฑ์',
+                icon: 'map-marker-alt', accent: '#FF006E', accent2: '#FF9AA2', glow: 'rgba(255,0,110,0.4)',
+                description: 'สร้างภาพจำ (Brand Image) ของผลิตภัณฑ์ในใจลูกค้า ให้แตกต่างจากคู่แข่งและตรงใจกลุ่มเป้าหมาย',
+                types: [
+                    'ตามคุณสมบัติ (Attribute)',
+                    'ตามคุณประโยชน์ (Benefit)',
+                    'ตามการใช้งาน (Usage)',
+                    'ตามคู่แข่ง (Against Competitor)'
+                ]
+            }
+        ];
+
+        // ----- Empathize 3 Methods -----
+        const empathizeData = [
+            {
+                id: 'research', name: 'Research', thai: 'การวิจัย',
+                icon: 'search', color: '#00CECB', color2: '#6BB6FF',
+                tagline: 'เก็บข้อมูลเชิงลึก',
+                description: 'ศึกษาข้อมูลทุติยภูมิ (Secondary Research) และข้อมูลปฐมภูมิ (Primary Research) เพื่อทำความเข้าใจตลาดและผู้ใช้',
+                methods: [
+                    'สำรวจแบบสอบถาม (Survey)',
+                    'วิเคราะห์ข้อมูลจาก Social Media',
+                    'ทบทวนงานวิจัยที่มีอยู่'
+                ],
+                output: 'ข้อมูลเชิงตัวเลขและพฤติกรรม'
+            },
+            {
+                id: 'interview', name: 'Interview', thai: 'การสัมภาษณ์',
+                icon: 'comment-dots', color: '#FFB627', color2: '#FFD480',
+                tagline: 'พูดคุยแบบตัวต่อตัว',
+                description: 'พูดคุยกับผู้ใช้ตัวจริงแบบเจาะลึก เพื่อเข้าใจแรงจูงใจ ความคิด และอารมณ์ที่ซ่อนอยู่',
+                methods: [
+                    'สัมภาษณ์รายบุคคล (1-on-1)',
+                    'สัมภาษณ์กลุ่ม (Focus Group)',
+                    'ถามคำถาม "ทำไม" ซ้ำ ๆ'
+                ],
+                output: 'Quote · Story · Insight เชิงลึก'
+            },
+            {
+                id: 'observe', name: 'Observe', thai: 'การสังเกต',
+                icon: 'eye', color: '#B388FF', color2: '#D4B5FF',
+                tagline: 'ดูสิ่งที่คนทำ ไม่ใช่แค่ที่พูด',
+                description: 'ลงไปสังเกตพฤติกรรมผู้ใช้ในสถานการณ์จริง จะได้เห็นสิ่งที่เขาไม่ได้บอก',
+                methods: [
+                    'สังเกตในสนาม (Field Observation)',
+                    'Shadowing ตามผู้ใช้ไปทำกิจกรรม',
+                    'Contextual Inquiry'
+                ],
+                output: 'พฤติกรรมจริง · Unmet Needs'
+            }
+        ];
+
+        // ----- Empathy Map 6 Sections -----
+        const empathyMapData = [
+            { id: 'think', name: 'Think & Feel', thai: 'คิดและรู้สึกอะไร', icon: 'brain',
+                color: '#B388FF', color2: '#D4B5FF',
+                desc: 'สิ่งที่ลูกค้าคิดและรู้สึกภายใน — ความกังวล ความหวัง ความฝัน',
+                examples: ['"อยากให้ชีวิตสะดวกขึ้น"', '"กลัวว่าจะพลาดโอกาส"', '"รู้สึกเหนื่อยกับการเดินทาง"']
+            },
+            { id: 'hear', name: 'Hear', thai: 'ได้ยินอะไร', icon: 'ear-listen',
+                color: '#FFB627', color2: '#FFD480',
+                desc: 'สิ่งที่ลูกค้าได้ยินจากคนรอบข้าง เพื่อน ครอบครัว สื่อ โฆษณา',
+                examples: ['"เพื่อนบอกว่า..."', '"หนังสือพิมพ์เขียนว่า..."', '"คนในครอบครัวเตือนว่า..."']
+            },
+            { id: 'see', name: 'See', thai: 'มองเห็นอะไร', icon: 'eye',
+                color: '#00CECB', color2: '#B5E8E3',
+                desc: 'สิ่งที่ลูกค้าเห็นในสิ่งแวดล้อม ตลาด คู่แข่ง',
+                examples: ['คู่แข่งใช้โปรโมชั่นหนัก', 'เพื่อนใช้แบรนด์นี้กัน', 'ราคาตลาดกำลังลดลง']
+            },
+            { id: 'say', name: 'Say & Do', thai: 'พูดและทำอะไร', icon: 'comment',
+                color: '#6BB6FF', color2: '#A8DADC',
+                desc: 'สิ่งที่ลูกค้าพูดออกมาและพฤติกรรมที่แสดงออก',
+                examples: ['บอกเพื่อนว่า "ชอบมาก"', 'โพสต์รีวิวบ่อย ๆ', 'ซื้อของซ้ำทุกเดือน']
+            },
+            { id: 'pain', name: 'Pain', thai: 'ปัญหา/ความไม่พอใจ', icon: 'frown',
+                color: '#FF5E5B', color2: '#FF9AA2',
+                desc: 'สิ่งที่ลูกค้ากลัว ผิดหวัง หรืออุปสรรค',
+                examples: ['รอนาน บริการช้า', 'ราคาแพงเกินไป', 'ใช้งานยาก สับสน']
+            },
+            { id: 'gain', name: 'Gain', thai: 'สิ่งที่อยากได้', icon: 'gift',
+                color: '#FFD480', color2: '#FF9AA2',
+                desc: 'สิ่งที่ลูกค้าต้องการ ความสำเร็จ และคุณค่าที่หวัง',
+                examples: ['ประหยัดเวลา', 'ราคาคุ้มค่า', 'ใช้งานง่าย สะดวก']
+            }
+        ];
+
+        // ============ STARFIELD ============
+        function createStarfield() {
+            const sf = document.getElementById('starfield');
+            for (let i = 0; i < 120; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                const size = Math.random() * 2 + 0.5;
+                s.style.width = size + 'px';
+                s.style.height = size + 'px';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 100 + '%';
+                s.style.setProperty('--dur', (Math.random() * 3 + 2) + 's');
+                s.style.animationDelay = Math.random() * 3 + 's';
+                sf.appendChild(s);
+            }
+        }
+        createStarfield();
+
+        // ============ RENDER: Design Thinking 5 Steps ============
+        function renderDTFlow() {
+            const container = document.getElementById('dtFlow');
+            designThinkingData.forEach((s, idx) => {
+                const card = document.createElement('div');
+                card.className = 'dt-step';
+                card.style.setProperty('--step-accent', s.color);
+                card.style.setProperty('--step-glow', s.glow);
+                card.innerHTML = `
+            <div class="dt-step-num">STEP 0${s.step}</div>
+            <div class="dt-step-circle" style="background: linear-gradient(135deg, ${s.color}, ${s.color2});">
+              <i class="fas fa-${s.icon}"></i>
+            </div>
+            <div class="dt-step-name" style="color: ${s.color};">${s.name}</div>
+            <div class="dt-step-thai">${s.thai}</div>
+            <div class="text-xs" style="color: var(--muted); margin-bottom: 0.5rem;">${s.tagline}</div>
+            <div class="dt-step-cta" style="color: ${s.color};">
+              <i class="fas fa-hand-pointer"></i> คลิกดูรายละเอียด
+            </div>
+            ${idx < designThinkingData.length - 1 ? '<div class="stp-arrow" style="color: ' + s.color + ';"><i class="fas fa-chevron-right text-xs"></i></div>' : ''}
+          `;
+                card.addEventListener('click', e => {
+                    const r = card.getBoundingClientRect();
+                    burstParticles(r.left + r.width / 2, r.top + 30, s.color);
+                    openModal('dt-' + s.id);
+                });
+                container.appendChild(card);
+            });
+        }
+        renderDTFlow();
+
+        // ============ RENDER: 5 Technologies ============
+        function renderTechGrid() {
+            const grid = document.getElementById('techGrid');
+            technologiesData.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'tech-card';
+                card.style.setProperty('--card-accent', t.color);
+                card.style.setProperty('--card-glow', t.color + '55');
+                card.style.setProperty('--card-bg', 'linear-gradient(135deg, ' + t.color + ', ' + t.color2 + ')');
+                card.innerHTML = `
+            <div class="tech-icon"><i class="fas fa-${t.icon}"></i></div>
+            <div class="display font-bold text-lg mb-1" style="color: ${t.color};">${t.name}</div>
+            <div class="text-xs mb-2" style="color: var(--muted);">${t.thai}</div>
+            <div class="text-xs" style="color: var(--fg); margin-bottom: 0.5rem;">${t.tagline}</div>
+            <div class="text-xs flex items-center justify-center gap-1" style="color: ${t.color};">
+              <i class="fas fa-plus-circle"></i> คลิกดูเพิ่มเติม
+            </div>
+          `;
+                card.addEventListener('mousemove', e => {
+                    const r = card.getBoundingClientRect();
+                    card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+                    card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+                });
+                card.addEventListener('click', e => {
+                    const r = card.getBoundingClientRect();
+                    burstParticles(r.left + r.width / 2, r.top + 30, t.color);
+                    openModal('tech-' + t.id);
+                });
+                grid.appendChild(card);
+            });
+        }
+        renderTechGrid();
+
+        // ============ RENDER: Daily Innovations ============
+        function renderInnovGrid() {
+            const grid = document.getElementById('innovGrid');
+            innovationsData.forEach(inv => {
+                const card = document.createElement('div');
+                card.className = 'innov-card';
+                card.style.setProperty('--card-accent', inv.color);
+                card.innerHTML = `
+            <div class="innov-icon" style="color: ${inv.color};"><i class="fas ${inv.icon}"></i></div>
+            <div class="display font-bold text-sm mb-1">${inv.name}</div>
+            <div class="text-xs" style="color: var(--muted);">${inv.thai}</div>
+            <div class="text-xs mt-2" style="color: var(--muted);">${inv.desc}</div>
+          `;
+                card.addEventListener('click', e => {
+                    const r = card.getBoundingClientRect();
+                    burstParticles(r.left + r.width / 2, r.top + 30, inv.color);
+                    openModal('innov-' + inv.id);
+                });
+                grid.appendChild(card);
+            });
+        }
+        renderInnovGrid();
+
+        // ============ RENDER: Communication Apps ============
+        function renderCommGrid() {
+            const grid = document.getElementById('commGrid');
+            communicationData.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'comm-card';
+                card.innerHTML = `
+            <div style="font-size: 2.25rem; color: ${c.color}; margin-bottom: 0.4rem;"><i class="${c.icon}"></i></div>
+            <div class="display font-bold text-sm mb-1">${c.name}</div>
+            <div class="text-xs" style="color: var(--muted); line-height: 1.4;">${c.desc}</div>
+          `;
+                card.addEventListener('click', e => {
+                    const r = card.getBoundingClientRect();
+                    burstParticles(r.left + r.width / 2, r.top + 30, c.color);
+                    openModal('comm-' + c.id);
+                });
+                grid.appendChild(card);
+            });
+        }
+        renderCommGrid();
+
+        // ============ RENDER: STP Flow ============
+        function renderSTPFlow() {
+            const container = document.getElementById('stpFlow');
+            stpData.forEach((s, idx) => {
+                const card = document.createElement('div');
+                card.className = 'stp-step';
+                card.style.setProperty('--stp-accent', s.accent);
+                card.style.setProperty('--stp-accent-2', s.accent2);
+                card.style.setProperty('--stp-glow', s.glow);
+                card.innerHTML = `
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs uppercase tracking-wider" style="color: ${s.accent};">Stage 0${idx + 1}</span>
+              <i class="fas fa-${s.icon} text-sm" style="color: ${s.accent};"></i>
+            </div>
+            <div class="stp-letter">${s.letter}</div>
+            <div class="display font-bold text-xl mb-1" style="color: ${s.accent};">${s.name}</div>
+            <div class="text-sm mb-3" style="color: var(--muted);">${s.thai}</div>
+            <div class="text-xs leading-relaxed mb-3" style="color: var(--fg);">${s.description}</div>
+            <div class="text-xs flex items-center gap-1" style="color: ${s.accent};">
+              <i class="fas fa-arrow-right"></i> คลิกดูตัวอย่าง
+            </div>
+            ${idx < stpData.length - 1 ? '<div class="stp-arrow" style="color: ' + s.accent + ';"><i class="fas fa-chevron-right text-xs"></i></div>' : ''}
+          `;
+                card.addEventListener('click', e => {
+                    const r = card.getBoundingClientRect();
+                    burstParticles(r.left + r.width / 2, r.top + 40, s.accent);
+                    openModal('stp-' + s.id);
+                });
+                container.appendChild(card);
+            });
+        }
+        renderSTPFlow();
+
+        // ============ RENDER: Segment Types ============
+        function renderSegmentGrid() {
+            const grid = document.getElementById('segmentGrid');
+            const segments = [
+                { id: 'demo', name: 'Demographic', thai: 'ประชากรศาสตร์', icon: 'users', color: '#00CECB',
+                  examples: ['อายุ 18-25', 'เพศหญิง', 'รายได้ 15,000-30,000 บาท'] },
+                { id: 'geo', name: 'Geographic', thai: 'ภูมิศาสตร์', icon: 'map-marker-alt', color: '#FFB627',
+                  examples: ['กรุงเทพฯ vs ต่างจังหวัด', 'เขตเมือง vs ชนบท', 'อากาศร้อน vs หนาว'] },
+                { id: 'psycho', name: 'Psychographic', thai: 'จิตวิทยา', icon: 'brain', color: '#B388FF',
+                  examples: ['ไลฟ์สไตล์สุขภาพ', 'คนรักเทคโนโลยี', 'กลุ่มหรูหรา vs ประหยัด'] },
+                { id: 'behav', name: 'Behavior', thai: 'พฤติกรรม', icon: 'chart-line', color: '#FF006E',
+                  examples: ['ความถี่ในการซื้อ', 'สถานภาพลูกค้า (New/Repeat)', 'โอกาสในการใช้'] }
+            ];
+            segments.forEach(seg => {
+                const card = document.createElement('div');
+                card.className = 'click-card';
+                card.style.setProperty('--card-accent', seg.color);
+                card.style.setProperty('--card-glow', seg.color + '40');
+                card.innerHTML = `
+            <div class="flex items-center gap-3 mb-3">
+              <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, ${seg.color}, ${seg.color}cc); color: var(--bg); box-shadow: 0 4px 14px ${seg.color}55;">
+                <i class="fas fa-${seg.icon}"></i>
+              </div>
+              <div>
+                <div class="display font-bold text-sm" style="color: ${seg.color};">${seg.name}</div>
+                <div class="text-xs" style="color: var(--muted);">${seg.thai}</div>
+              </div>
+            </div>
+            <ul class="space-y-1.5 text-xs" style="color: var(--fg);">
+              ${seg.examples.map(ex => '<li class="flex items-start gap-2"><i class="fas fa-chevron-right mt-1" style="color: ' + seg.color + ';"></i><span>' + ex + '</span></li>').join('')}
+            </ul>
+          `;
+                card.addEventListener('click', e => {
+                    const r = card.getBoundingClientRect();
+                    burstParticles(r.left + r.width / 2, r.top + 30, seg.color);
+                    openModal('seg-' + seg.id);
+                });
+                grid.appendChild(card);
+            });
+        }
+        renderSegmentGrid();
+
+        // ============ RENDER: Empathize 3 Methods ============
+        function renderEmpathizeGrid() {
+            const grid = document.getElementById('empathizeGrid');
+            empathizeData.forEach(m => {
+                const card = document.createElement('div');
+                card.className = 'click-card';
+                card.style.setProperty('--card-accent', m.color);
+                card.style.setProperty('--card-glow', m.color + '40');
+                card.innerHTML = `
+            <div class="flex items-center gap-3 mb-3">
+              <div style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, ${m.color}, ${m.color2}); color: var(--bg); font-size: 1.5rem; box-shadow: 0 8px 24px ${m.color}55;">
+                <i class="fas fa-${m.icon}"></i>
+              </div>
+              <div>
+                <div class="display font-bold text-lg" style="color: ${m.color};">${m.name}</div>
+                <div class="text-xs" style="color: var(--muted);">${m.thai}</div>
+              </div>
+            </div>
+            <div class="text-sm font-medium mb-2" style="color: ${m.color};">${m.tagline}</div>
+            <div class="text-xs leading-relaxed mb-3" style="color: var(--fg);">${m.description}</div>
+            <div class="text-xs flex items-center gap-1" style="color: ${m.color};">
+              <i class="fas fa-arrow-right"></i> คลิกดูเทคนิค
+            </div>
+          `;
+                card.addEventListener('click', e => {
+                    const r = card.getBoundingClientRect();
+                    burstParticles(r.left + r.width / 2, r.top + 30, m.color);
+                    openModal('emp-' + m.id);
+                });
+                grid.appendChild(card);
+            });
+        }
+        renderEmpathizeGrid();
+
+        // ============ RENDER: Empathy Map 6 sections ============
+        function renderEmpathyMapGrid() {
+            const grid = document.getElementById('empathyMapGrid');
+            empathyMapData.forEach(c => {
+                const cell = document.createElement('div');
+                cell.className = 'empathy-cell';
+                cell.style.setProperty('--cell-accent', c.color);
+                cell.style.setProperty('--cell-glow', c.color + '55');
+                cell.style.setProperty('--cell-bg', 'linear-gradient(135deg, ' + c.color + ', ' + c.color2 + ')');
+                cell.innerHTML = `
+            <div class="empathy-icon"><i class="fas fa-${c.icon}"></i></div>
+            <div class="display font-bold text-base mb-1" style="color: ${c.color};">${c.name}</div>
+            <div class="text-xs mb-2" style="color: var(--muted);">${c.thai}</div>
+            <div class="text-xs" style="color: var(--fg);">${c.desc}</div>
+          `;
+                cell.addEventListener('click', e => {
+                    const r = cell.getBoundingClientRect();
+                    burstParticles(r.left + r.width / 2, r.top + 30, c.color);
+                    openModal('map-' + c.id);
+                });
+                grid.appendChild(cell);
+            });
+        }
+        renderEmpathyMapGrid();
+
+        // ============ Pain / Gain item click → side-by-side detail modal ============
+        document.querySelectorAll('.pain-item').forEach(item => {
+            item.addEventListener('click', e => {
+                const r = item.getBoundingClientRect();
+                burstParticles(r.left + r.width / 2, r.top + r.height / 2, '#FF5E5B');
+                openPainGainModal(item.dataset.pain, item.dataset.gain || null, false);
+            });
+        });
+        document.querySelectorAll('.gain-item').forEach(item => {
+            item.addEventListener('click', e => {
+                const r = item.getBoundingClientRect();
+                burstParticles(r.left + r.width / 2, r.top + r.height / 2, '#00CECB');
+                openPainGainModal(item.dataset.gain, item.dataset.pain || null, true);
+            });
+        });
+
+        function openPainGainModal(text, counterpart, isGain) {
+            const body = document.getElementById('modalBody');
+            const accent = isGain ? 'var(--accent-3)' : 'var(--accent-2)';
+            const icon = isGain ? 'fa-smile' : 'fa-frown';
+            const title = isGain ? 'Gain Point' : 'Pain Point';
+            body.innerHTML = `
+        <div class="text-center mb-6">
+          <div class="mx-auto mb-4 w-20 h-20 rounded-full flex items-center justify-center"
+               style="background: ${isGain ? 'rgba(0,206,203,0.20)' : 'rgba(255,94,91,0.20)'}; color: ${accent};">
+            <i class="fas ${icon} text-3xl"></i>
+          </div>
+          <div class="display text-2xl font-bold" style="color: ${accent};">${title}</div>
+        </div>
+        <div class="p-4 rounded-xl mb-4" style="background: var(--bg-2); border-left: 3px solid ${accent};">
+          <div class="text-sm font-medium leading-relaxed">${text}</div>
+        </div>
+        ${counterpart ? `
+        <div class="p-4 rounded-xl" style="background: var(--surface); border: 1px solid var(--border);">
+          <div class="text-xs uppercase tracking-wider mb-2" style="color: var(--muted);">
+            ${isGain ? 'ตัวอย่าง Pain ที่เกี่ยวข้อง' : 'ตัวอย่าง Gain ที่เกี่ยวข้อง'}
+          </div>
+          <div class="text-sm leading-relaxed">${counterpart}</div>
+        </div>
+        ` : ''}
+      `;
+            document.getElementById('modalBackdrop').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // ============ Hero step-node click (Design Thinking orbit) ============
+        document.querySelectorAll('.step-node').forEach(node => {
+            node.addEventListener('click', e => {
+                e.stopPropagation();
+                const stepNum = parseInt(node.dataset.step);
+                const step = designThinkingData.find(s => s.step === stepNum);
+                if (!step) return;
+                const r = node.getBoundingClientRect();
+                burstParticles(r.left + r.width / 2, r.top + r.height / 2, step.color);
+                openModal('dt-' + step.id);
+            });
+        });
+
+        // ============ MODAL (unified for all data types) ============
+        function openModal(key) {
+            const body = document.getElementById('modalBody');
+            let title = '', icon = 'fa-circle', accent = 'var(--accent)', color1 = '#FFB627', color2 = '#FF5E5B', sections = [];
+            const iconOnly = function(iconName) {
+                if (!iconName) return 'fa-circle';
+                return iconName.startsWith('fa-') ? iconName : 'fa-' + iconName;
+            };
+
+            if (key.startsWith('dt-')) {
+                const s = designThinkingData.find(function(x) { return 'dt-' + x.id === key; });
+                if (!s) return;
+                title = s.name + ' · ' + s.thai;
+                icon = iconOnly(s.icon); accent = s.color; color1 = s.color; color2 = s.color2;
+                sections = [
+                    { label: 'Tagline', value: s.tagline, icon: 'fa-tag' },
+                    { label: 'คำอธิบาย', value: s.description, icon: 'fa-align-left' },
+                    { label: 'กิจกรรมหลัก', value: '<ul style="margin: 0; padding-left: 1.25rem;">' + s.activities.map(function(a) { return '<li>' + a + '</li>'; }).join('') + '</ul>', icon: 'fa-list-check' },
+                    { label: 'ผลลัพธ์', value: s.output, icon: 'fa-flag-checkered' }
+                ];
+            } else if (key.startsWith('tech-')) {
+                const t = technologiesData.find(function(x) { return 'tech-' + x.id === key; });
+                if (!t) return;
+                title = t.name + ' · ' + t.thai;
+                icon = iconOnly(t.icon); accent = t.color; color1 = t.color; color2 = t.color2;
+                sections = [
+                    { label: 'Tagline', value: t.tagline, icon: 'fa-tag' },
+                    { label: 'คำอธิบาย', value: t.description, icon: 'fa-align-left' },
+                    { label: 'ประโยชน์', value: '<ul style="margin: 0; padding-left: 1.25rem;">' + t.benefits.map(function(b) { return '<li>' + b + '</li>'; }).join('') + '</ul>', icon: 'fa-check' },
+                    { label: 'ตัวอย่างการใช้งาน', value: '<ul style="margin: 0; padding-left: 1.25rem;">' + t.examples.map(function(ex) { return '<li>' + ex + '</li>'; }).join('') + '</ul>', icon: 'fa-lightbulb' }
+                ];
+            } else if (key.startsWith('innov-')) {
+                const inv = innovationsData.find(function(x) { return 'innov-' + x.id === key; });
+                if (!inv) return;
+                title = inv.name;
+                icon = iconOnly(inv.icon); accent = inv.color; color1 = inv.color; color2 = inv.color;
+                sections = [
+                    { label: 'ชื่อไทย', value: inv.thai, icon: 'fa-tag' },
+                    { label: 'รายละเอียด', value: inv.desc, icon: 'fa-align-left' }
+                ];
+            } else if (key.startsWith('comm-')) {
+                const c = communicationData.find(function(x) { return 'comm-' + x.id === key; });
+                if (!c) return;
+                title = c.name;
+                icon = c.icon; accent = c.color; color1 = c.color; color2 = c.color;
+                sections = [
+                    { label: 'จุดเด่น', value: c.desc, icon: 'fa-star' }
+                ];
+            } else if (key.startsWith('stp-')) {
+                const s = stpData.find(function(x) { return 'stp-' + x.id === key; });
+                if (!s) return;
+                title = s.letter + ' · ' + s.name + ' · ' + s.thai;
+                icon = iconOnly(s.icon); accent = s.accent; color1 = s.accent; color2 = s.accent2;
+                sections = [
+                    { label: 'คำอธิบาย', value: s.description, icon: 'fa-align-left' },
+                    { label: 'ตัวเลือกย่อย', value: '<ul style="margin: 0; padding-left: 1.25rem;">' + s.types.map(function(t) { return '<li>' + t + '</li>'; }).join('') + '</ul>', icon: 'fa-list' }
+                ];
+            } else if (key.startsWith('emp-')) {
+                const m = empathizeData.find(function(x) { return 'emp-' + x.id === key; });
+                if (!m) return;
+                title = m.name + ' · ' + m.thai;
+                icon = iconOnly(m.icon); accent = m.color; color1 = m.color; color2 = m.color2;
+                sections = [
+                    { label: 'Tagline', value: m.tagline, icon: 'fa-tag' },
+                    { label: 'คำอธิบาย', value: m.description, icon: 'fa-align-left' },
+                    { label: 'เทคนิค', value: '<ul style="margin: 0; padding-left: 1.25rem;">' + m.methods.map(function(mt) { return '<li>' + mt + '</li>'; }).join('') + '</ul>', icon: 'fa-tools' },
+                    { label: 'ผลลัพธ์', value: m.output, icon: 'fa-flag-checkered' }
+                ];
+            } else if (key.startsWith('map-')) {
+                const c = empathyMapData.find(function(x) { return 'map-' + x.id === key; });
+                if (!c) return;
+                title = c.name + ' · ' + c.thai;
+                icon = iconOnly(c.icon); accent = c.color; color1 = c.color; color2 = c.color2;
+                sections = [
+                    { label: 'ความหมาย', value: c.desc, icon: 'fa-book-open' },
+                    { label: 'ตัวอย่าง', value: '<ul style="margin: 0; padding-left: 1.25rem;">' + c.examples.map(function(ex) { return '<li>' + ex + '</li>'; }).join('') + '</ul>', icon: 'fa-comments' }
+                ];
+            } else {
+                return;
+            }
+
+            body.innerHTML = `
+        <div class="text-center mb-6">
+          <div class="mx-auto mb-4 rounded-full flex items-center justify-center"
+               style="width: 100px; height: 100px; background: radial-gradient(circle at 30% 30%, ${color1}, ${color2}); box-shadow: 0 0 50px ${color1}88; color: var(--bg); font-size: 2rem;">
+            <i class="${icon}"></i>
+          </div>
+          <div class="display text-2xl font-bold">${title}</div>
+        </div>
+        <div class="space-y-3">
+          ${sections.map(function(s) { return `
+            <div class="p-4 rounded-xl" style="background: var(--bg-2); border-left: 3px solid ${accent};">
+              <div class="flex items-center gap-2 mb-2">
+                <i class="fas ${s.icon}" style="color: ${accent};"></i>
+                <div class="font-bold text-sm">${s.label}</div>
+              </div>
+              <div class="text-sm leading-relaxed" style="color: var(--fg);">${s.value}</div>
+            </div>
+          `; }).join('')}
+        </div>
+      `;
+            document.getElementById('modalBackdrop').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modalBackdrop').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('closeModal').addEventListener('click', closeModal);
+        document.getElementById('modalBackdrop').addEventListener('click', e => {
+            if (e.target.id === 'modalBackdrop') closeModal();
+        });
+
+        // ============ PARTICLE BURST ============
+        function burstParticles(x, y, color) {
+            for (let i = 0; i < 12; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.background = color;
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                p.style.boxShadow = '0 0 10px ' + color;
+                document.body.appendChild(p);
+
+                const angle = (Math.PI * 2 * i) / 12;
+                const dist = 40 + Math.random() * 60;
+                const dx = Math.cos(angle) * dist;
+                const dy = Math.sin(angle) * dist;
+
+                p.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(0)', opacity: 0 }
+                ], { duration: 700, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' }).onfinish = () => p.remove();
+            }
+        }
+
+        // ============ TOAST ============
+        function showToast(text, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastText').textContent = text;
+            const icon = toast.querySelector('i');
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle text-xl';
+                icon.style.color = 'var(--accent-3)';
+                toast.style.borderColor = 'var(--accent-3)';
+            } else {
+                icon.className = 'fas fa-exclamation-circle text-xl';
+                icon.style.color = 'var(--accent-2)';
+                toast.style.borderColor = 'var(--accent-2)';
+            }
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // ============ TOAST ============
+        function showToast(text, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastText').textContent = text;
+            const icon = toast.querySelector('i');
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle text-xl';
+                icon.style.color = 'var(--accent-3)';
+                toast.style.borderColor = 'var(--accent-3)';
+            } else {
+                icon.className = 'fas fa-exclamation-circle text-xl';
+                icon.style.color = 'var(--accent-2)';
+                toast.style.borderColor = 'var(--accent-2)';
+            }
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // ============ COUNTERS ============
+        function animateCounters() {
+            document.querySelectorAll('[data-count]').forEach(el => {
+                const target = parseInt(el.dataset.count);
+                const duration = 1500;
+                const start = Date.now();
+                const update = () => {
+                    const elapsed = Date.now() - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    el.textContent = Math.floor(target * eased) + (target === 200 ? '+' : '');
+                    if (progress < 1) requestAnimationFrame(update);
+                };
+                update();
+            });
+        }
+
+        // ============ REVEAL ON SCROLL ============
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    if (e.target.querySelector('[data-count]')) animateCounters();
+                }
+            });
+        }, { threshold: 0.15 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // ============ NAVIGATION ============
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                const target = document.querySelector(a.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('mobileMenu').classList.remove('open');
+                }
+            });
+        });
+
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.add('open');
+        });
+        document.getElementById('closeMobileMenu').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.remove('open');
+        });
+
+        // Section spy
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-link');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(s => {
+                if (window.scrollY >= s.offsetTop - 200) current = s.id;
+            });
+            navLinks.forEach(l => {
+                l.classList.remove('active');
+                if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+            });
+        });
+
+        // Close modal on ESC
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+
+</html>
